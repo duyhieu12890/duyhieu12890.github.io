@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lật Mảnh Ghép - Trí Tuệ Nhân Tạo & Tin Học 10-11</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-heading: 'Outfit', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: radial-gradient(circle at 10% 10%, #e0f2fe 0%, #f0f9ff 40%, #e0e7ff 100%);
+      min-height: 100vh;
+      color: #0f172a;
+    }
+
+    .font-heading {
+      font-family: var(--font-heading);
+    }
+
+    /* Flip tile 3D animation */
+    .tile-container {
+      perspective: 1000px;
+    }
+
+    .tile-card {
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+
+    .tile-container.opened .tile-card {
+      transform: rotateY(180deg);
+      pointer-events: none;
+    }
+
+    .tile-front, .tile-back {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .tile-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Glassmorphic styling */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+
+    /* Button hover animation */
+    .btn-bounce {
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn-bounce:hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+    .btn-bounce:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { color: #dc2626; transform: scale(1); }
+      50% { color: #ef4444; transform: scale(1.08); }
+    }
+    .timer-critical {
+      animation: pulse-red 0.8s infinite;
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <header class="w-full glass-card sticky top-0 z-30 border-b border-sky-100 shadow-sm px-4 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="goToLobby()">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-blue-500/20">
+          🤖
+        </div>
+        <div>
+          <h1 class="font-heading font-extrabold text-lg md:text-xl text-slate-800 tracking-tight leading-none">
+            AI & Tin Học 10-11
+          </h1>
+          <p class="text-xs text-slate-500 font-medium">Trò chơi lật mảnh ghép trí tuệ</p>
+        </div>
+      </div>
+
+      <div id="navRightControls" class="flex items-center gap-3 hidden">
+        <button onclick="goToLevelSelection()" class="btn-bounce px-3.5 py-1.5 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 shadow-xs flex items-center gap-1.5">
+          <span>←</span> <span class="hidden sm:inline">Chọn chủ đề</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 flex flex-col justify-center">
+
+    <!-- Lobby Screen -->
+    <section id="lobbyScreen" class="space-y-8 max-w-2xl mx-auto text-center py-8">
+      <div class="space-y-4">
+        <div class="w-24 h-24 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-3xl mx-auto flex items-center justify-center text-5xl shadow-xl shadow-blue-500/25 animate-bounce">
+          💡
+        </div>
+        <div class="space-y-2">
+          <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 uppercase tracking-wider">
+            Kiến thức Tin học & Trí tuệ nhân tạo
+          </span>
+          <h2 class="font-heading font-black text-3xl md:text-5xl text-slate-800 tracking-tight">
+            Lật Mảnh Ghép Đoán Thuật Ngữ
+          </h2>
+          <p class="text-slate-600 text-base md:text-lg max-w-lg mx-auto leading-relaxed">
+            Thử thách trí tuệ với các khái niệm, thiết bị phần cứng, thuật toán AI và kiến thức Tin học lớp 10, 11!
+          </p>
+        </div>
+      </div>
+
+      <!-- Instructions Card -->
+      <div class="glass-card p-6 rounded-3xl text-left space-y-4 shadow-xl border border-white/90">
+        <h3 class="font-heading font-extrabold text-lg text-slate-800 flex items-center gap-2">
+          <span>📖</span> Hướng Dẫn Cách Chơi
+        </h3>
+        <ul class="space-y-2.5 text-sm text-slate-600 font-medium">
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 font-bold">•</span>
+            <span>Mỗi thử thách bắt đầu với chính xác <strong>500 điểm</strong>. Thời gian trôi qua mỗi giây sẽ trừ <strong>10 điểm</strong>.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 font-bold">•</span>
+            <span>Bấm mở các ô số (1-12) để hé lộ hình ảnh thuật ngữ ẩn bên dưới.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 font-bold">•</span>
+            <span>Có <strong>2 gợi ý</strong> hỗ trợ (ẩn mặc định). Mỗi lần bấm mở gợi ý sẽ trừ <strong>80 điểm</strong>.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 font-bold">•</span>
+            <span>Ô hiển thị dạng <code>___ ___ ___</code> cho biết số chữ cái của đáp án. Hoàn thành chủ đề nào, chủ đề đó sẽ khóa lại và làm mờ!</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Start Button -->
+      <div>
+        <button onclick="goToLevelSelection()" class="btn-bounce w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-heading font-extrabold text-lg rounded-2xl shadow-xl shadow-blue-500/30 transition">
+          🚀 Bắt Đầu Khám Phá
+        </button>
+      </div>
+    </section>
+
+    <!-- Level Selection Screen -->
+    <section id="levelSelectScreen" class="space-y-6 hidden">
+      <div class="text-center max-w-2xl mx-auto space-y-2 py-2">
+        <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 uppercase tracking-wider">
+          Chủ đề học tập
+        </span>
+        <h2 class="font-heading font-black text-3xl md:text-4xl text-slate-800">
+          Danh Sách Thử Thách
+        </h2>
+        <p class="text-slate-600 text-sm md:text-base">
+          Chọn một chủ đề chưa hoàn thành để bắt đầu khám phá kiến thức!
+        </p>
+      </div>
+
+      <!-- Level Grid (10 Levels) -->
+      <div id="levelsContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
+        <!-- Generated via JavaScript -->
+      </div>
+    </section>
+
+    <!-- Gameplay Screen -->
+    <section id="gameplayScreen" class="hidden space-y-6 max-w-4xl mx-auto">
+      
+      <!-- Top Game Stats Bar -->
+      <div class="grid grid-cols-3 gap-3 md:gap-4">
+        <!-- Score Card -->
+        <div class="glass-card p-3 md:p-4 rounded-2xl flex items-center justify-between border-l-4 border-l-amber-500 shadow-sm">
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Điểm Số</p>
+            <p id="scoreText" class="font-heading font-black text-2xl md:text-3xl text-amber-600">500</p>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-xl font-bold">
+            ⭐
+          </div>
+        </div>
+
+        <!-- Timer Card -->
+        <div class="glass-card p-3 md:p-4 rounded-2xl flex items-center justify-between border-l-4 border-l-blue-500 shadow-sm">
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Thời Gian</p>
+            <p id="timerText" class="font-heading font-black text-2xl md:text-3xl text-blue-600">60s</p>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">
+            ⏳
+          </div>
+        </div>
+
+        <!-- Current Level Info -->
+        <div class="glass-card p-3 md:p-4 rounded-2xl flex items-center justify-between border-l-4 border-l-indigo-500 shadow-sm">
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Chủ Đề</p>
+            <p id="levelTitleText" class="font-heading font-extrabold text-sm md:text-base text-indigo-900 truncate max-w-[110px] md:max-w-[160px]">Chủ đề 1</p>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl font-bold">
+            🧠
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Canvas / Grid Container -->
+      <div class="glass-card p-3 md:p-5 rounded-3xl shadow-xl space-y-4">
+        
+        <!-- Hint Display Box / Controls -->
+        <div class="space-y-2">
+          <div class="bg-blue-50/85 border border-blue-200/80 p-3 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">💡</span>
+              <span class="text-xs md:text-sm font-bold text-blue-900" id="hintStatusText">Gợi ý: (Đang ẩn - Bấm nút bên phải để mở)</span>
+            </div>
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <button onclick="useHint(1)" id="hint1Btn" class="btn-bounce text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-lg shadow-xs">
+                Gợi ý 1 (-80đ)
+              </button>
+              <button onclick="useHint(2)" id="hint2Btn" class="btn-bounce text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg shadow-xs">
+                Gợi ý 2 (-80đ)
+              </button>
+              <button onclick="revealRandomTile()" class="btn-bounce text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg shadow-xs">
+                Mở ngẫu nhiên (-50đ)
+              </button>
+            </div>
+          </div>
+
+          <!-- Word Blank Underscore Display -->
+          <div class="text-center py-2">
+            <p id="wordBlanksDisplay" class="font-heading font-black text-xl md:text-2xl text-slate-700 tracking-widest bg-white/80 py-2.5 px-6 rounded-xl border border-slate-200 shadow-xs inline-block">
+              _ _ _ _
+            </p>
+          </div>
+        </div>
+
+        <!-- Puzzle Board Container (Full intact background image with absolute 3x4 tile covering grid) -->
+        <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-inner bg-slate-900">
+          
+          <!-- Underlying Background Image (Full, intact, single layer) -->
+          <img id="bgPuzzleImage" src="" alt="Hidden Background" class="absolute inset-0 w-full h-full object-cover select-none" onerror="this.src='https://placehold.co/800x600/1e293b/ffffff?text=AI+Thu%E1%BA%ADt+Ng%E1%BB%AF'">
+
+          <!-- 3x4 Tile Grid (Overlays Image precisely with zero gaps and full fill) -->
+          <div id="puzzleGrid" class="absolute inset-0 grid grid-cols-4 grid-rows-3 gap-0 p-0 m-0 z-10 w-full h-full">
+            <!-- 12 Tiles generated via JavaScript -->
+          </div>
+        </div>
+
+        <!-- Answer Input Box -->
+        <div class="space-y-2">
+          <form onsubmit="handleGuessSubmit(event)" class="flex gap-2">
+            <input 
+              type="text" 
+              id="answerInput" 
+              placeholder="Nhập tên thuật ngữ hoặc thiết bị..." 
+              autocomplete="off"
+              class="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition font-medium text-slate-800 shadow-xs bg-white"
+            />
+            <button 
+              type="submit" 
+              class="btn-bounce px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700"
+            >
+              Đoán 🎯
+            </button>
+          </form>
+
+          <!-- Notification / Feedback Toast -->
+          <div id="feedbackMessage" class="hidden p-3 rounded-xl text-sm font-bold text-center transition-all"></div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <div id="gameModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card w-full max-w-md p-6 rounded-3xl shadow-2xl text-center space-y-5 border border-white/80">
+      
+      <!-- Icon Indicator -->
+      <div id="modalIcon" class="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-4xl shadow-lg">
+        🏆
+      </div>
+
+      <!-- Title & Description -->
+      <div class="space-y-1">
+        <h3 id="modalTitle" class="font-heading font-black text-2xl md:text-3xl text-slate-800">
+          Chính Xác!
+        </h3>
+        <p id="modalDescription" class="text-slate-600 text-sm md:text-base font-medium">
+          Bạn đã đoán đúng thuật ngữ tin học!
+        </p>
+      </div>
+
+      <!-- Image Reveal Preview -->
+      <div class="relative w-full aspect-video rounded-2xl overflow-hidden border-2 border-slate-200 shadow-md">
+        <img id="modalPreviewImage" src="" alt="Revealed Image" class="w-full h-full object-cover">
+        <div class="absolute bottom-2 right-2 bg-slate-900/80 text-white text-xs font-bold px-2.5 py-1 rounded-lg backdrop-blur-xs">
+          Đáp án: <span id="modalAnswerText" class="text-amber-400">---</span>
+        </div>
+      </div>
+
+      <!-- Score Breakdown -->
+      <div class="bg-slate-100/80 p-3 rounded-xl flex justify-around text-center border border-slate-200/60">
+        <div>
+          <p class="text-xs text-slate-500 font-bold">Điểm số</p>
+          <p id="modalFinalScore" class="font-heading font-black text-xl text-amber-600">0</p>
+        </div>
+        <div class="border-r border-slate-300"></div>
+        <div>
+          <p class="text-xs text-slate-500 font-bold">Thời gian dư</p>
+          <p id="modalTimeLeft" class="font-heading font-black text-xl text-blue-600">0s</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-3 pt-2">
+        <button 
+          onclick="goToLevelSelection()" 
+          class="btn-bounce w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition"
+        >
+          🎮 Chọn chủ đề khác
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       DATA STRUCTURES & LEVEL DEFINITIONS (AI & CS 10-11 Topics with reliable images)
+       ========================================================================== */
+    const LEVELS = [
+      {
+        id: 1,
+        title: "Trí Tuệ Nhân Tạo",
+        keywords: ["trí tuệ nhân tạo", "tri tue nhan tao", "ai", "artificial intelligence"],
+        image: "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=1200&q=80",
+        hint1: "Lĩnh vực khoa học máy tính mô phỏng tư duy con người",
+        hint2: "Viết tắt bằng 2 chữ cái tiếng Anh: A - I"
+      },
+      {
+        id: 2,
+        title: "Mạng Máy Tính",
+        keywords: ["mạng máy tính", "mang may tinh", "network", "internet", "mang internet"],
+        image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=1200&q=80",
+        hint1: "Hệ thống kết nối các thiết bị để chia sẻ dữ liệu",
+        hint2: "Nền tảng cốt lõi của kết nối toàn cầu hiện nay"
+      },
+      {
+        id: 3,
+        title: "Học Máy",
+        keywords: ["học máy", "hoc may", "machine learning", "ml"],
+        image: "https://images.unsplash.com/photo-1555255707-c07966088b7b?auto=format&fit=crop&w=1200&q=80",
+        hint1: "Nhánh của AI giúp máy tính tự học qua dữ liệu",
+        hint2: "Thuật ngữ tiếng Anh bắt đầu bằng chữ M và chữ L"
+      },
+      {
+        id: 4,
+        title: "Điện Toán Đám Mây",
+        keywords: ["điện toán đám mây", "dien toan dam may", "cloud computing", "đám mây"],
+        image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=1200&q=80",
+        hint1: "Mô hình cung cấp dịch vụ máy tính qua internet",
+        hint2: "Lưu trữ và xử lý dữ liệu từ xa thay vì ổ cứng cục bộ"
+      },
+      {
+        id: 5,
+        title: "Dữ Liệu Lớn",
+        keywords: ["dữ liệu lớn", "du lieu lon", "big data", "bigdata"],
+        image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
+        hint1: "Tập hợp dữ liệu khổng lồ, phức tạp cần công cụ chuyên dụng",
+        hint2: "Thuật ngữ tiếng Anh gồm 2 từ: Big và Data"
+      },
+      {
+        id: 6,
+        title: "An Ninh Mạng",
+        keywords: ["an ninh mạng", "an ninh mang", "cybersecurity", "bảo mật", "bao mat"],
+        image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80",
+        hint1: "Bảo vệ hệ thống mạng và thông tin khỏi tấn công số",
+        hint2: "Lĩnh vực cực kỳ quan trọng chống hacker và mã độc"
+      },
+      {
+        id: 7,
+        title: "Thuật Toán",
+        keywords: ["thuật toán", "thuat toan", "algorithm"],
+        image: "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=1200&q=80",
+        hint1: "Tập hợp hữu hạn các bước để giải quyết một bài toán",
+        hint2: "Nền tảng của lập trình và tư duy máy tính"
+      },
+      {
+        id: 8,
+        title: "Ngôn Ngữ Lập Trình Python",
+        keywords: ["python", "ngôn ngữ python", "ngon ngu python"],
+        image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
+        hint1: "Ngôn ngữ lập trình phổ biến được giảng dạy ở cấp THPT",
+        hint2: "Tên đặt theo loài rắn và có cú pháp rất gần gũi"
+      },
+      {
+        id: 9,
+        title: "Rô Bốt Thông Minh",
+        keywords: ["rô bốt", "robot", "rô bốt thông minh", "robot thong minh"],
+        image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80",
+        hint1: "Thiết bị cơ khí tự động được tích hợp AI",
+        hint2: "Có thể thay thế con người làm việc trong môi trường nguy hiểm"
+      },
+      {
+        id: 10,
+        title: "Thực Tế Ảo",
+        keywords: ["thực tế ảo", "thuc te ao", "virtual reality", "vr"],
+        image: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?auto=format&fit=crop&w=1200&q=80",
+        hint1: "Công nghệ mô phỏng không gian 3 chiều bằng kính chuyên dụng",
+        hint2: "Viết tắt bằng 2 chữ cái V và R"
+      }
+    ];
+
+    /* ==========================================================================
+       GAME STATE VARIABLES
+       ========================================================================== */
+    let currentLevel = null;
+    let score = 500;
+    let timeLeft = 60;
+    let timerInterval = null;
+    let openedTiles = new Set();
+    let isGameOver = false;
+    let completedLevels = new Set(JSON.parse(localStorage.getItem('ai_puzzle_completed_levels_v9') || '[]'));
+    let hint1Used = false;
+    let hint2Used = false;
+
+    const lobbyScreen = document.getElementById('lobbyScreen');
+    const levelSelectScreen = document.getElementById('levelSelectScreen');
+    const gameplayScreen = document.getElementById('gameplayScreen');
+    const navRightControls = document.getElementById('navRightControls');
+    
+    const puzzleGrid = document.getElementById('puzzleGrid');
+    const answerInput = document.getElementById('answerInput');
+    const feedbackMessage = document.getElementById('feedbackMessage');
+    const levelsContainer = document.getElementById('levelsContainer');
+    const bgPuzzleImage = document.getElementById('bgPuzzleImage');
+    const levelTitleText = document.getElementById('levelTitleText');
+    const scoreText = document.getElementById('scoreText');
+    const timerText = document.getElementById('timerText');
+
+    const gameModal = document.getElementById('gameModal');
+    const modalIcon = document.getElementById('modalIcon');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDescription = document.getElementById('modalDescription');
+    const modalPreviewImage = document.getElementById('modalPreviewImage');
+    const modalAnswerText = document.getElementById('modalAnswerText');
+    const modalFinalScore = document.getElementById('modalFinalScore');
+    const modalTimeLeft = document.getElementById('modalTimeLeft');
+
+    // Init Lobby on Page Load
+    window.addEventListener('DOMContentLoaded', () => {
+      goToLobby();
+    });
+
+    /**
+     * Switch view to Intro Lobby
+     */
+    function goToLobby() {
+      clearInterval(timerInterval);
+      gameModal.classList.add('hidden');
+      gameplayScreen.classList.add('hidden');
+      levelSelectScreen.classList.add('hidden');
+      lobbyScreen.classList.remove('hidden');
+      navRightControls.classList.add('hidden');
+    }
+
+    /**
+     * Switch view to Level Selection Screen
+     */
+    function goToLevelSelection() {
+      clearInterval(timerInterval);
+      gameModal.classList.add('hidden');
+      gameplayScreen.classList.add('hidden');
+      lobbyScreen.classList.add('hidden');
+      levelSelectScreen.classList.remove('hidden');
+      navRightControls.classList.add('hidden');
+      renderLevelList();
+    }
+
+    /**
+     * Render 10 level cards in the selection screen with heavy full blur and no title exposure
+     */
+    function renderLevelList() {
+      levelsContainer.innerHTML = '';
+      LEVELS.forEach((lvl) => {
+        const isDone = completedLevels.has(lvl.id);
+        const card = document.createElement('div');
+        
+        if (isDone) {
+          card.className = "glass-card p-3 rounded-2xl border border-emerald-200 shadow-sm opacity-50 bg-emerald-50/30 flex flex-col justify-between cursor-not-allowed";
+        } else {
+          card.className = "glass-card p-3 rounded-2xl border border-white/80 shadow-sm hover:shadow-md transition cursor-pointer flex flex-col justify-between group btn-bounce";
+          card.onclick = () => startLevel(lvl.id);
+        }
+
+        card.innerHTML = `
+          <div class="relative aspect-video rounded-xl overflow-hidden bg-slate-200 mb-2">
+            <img src="${lvl.image}" alt="Chủ đề ẩn" class="w-full h-full object-cover ${isDone ? 'grayscale' : 'blur-xl scale-110 opacity-70'}" onerror="this.src='https://placehold.co/400x300/1e293b/ffffff?text=Chu+De+${lvl.id}'">
+            <div class="absolute inset-0 bg-slate-900/30 flex items-center justify-center p-2">
+              <span class="text-xs font-bold text-white bg-blue-600/90 px-3 py-1 rounded-lg backdrop-blur-xs shadow-md">
+                Chủ đề ${lvl.id}
+              </span>
+            </div>
+            ${isDone ? '<div class="absolute top-2 right-2"><span class="text-xs font-bold text-emerald-300 bg-emerald-900/90 px-2 py-0.5 rounded-md">✓ Đã xong</span></div>' : ''}
+          </div>
+          <div>
+            <h3 class="font-heading font-bold text-slate-800 transition truncate text-sm md:text-base text-center">
+              ${isDone ? 'Đã hoàn thành' : 'Thử thách số ' + lvl.id}
+            </h3>
+            <p class="text-xs text-slate-500 font-medium text-center mt-0.5">${isDone ? 'Khóa' : 'Đoán thuật ngữ'}</p>
+          </div>
+          <button class="w-full mt-3 py-2 ${isDone ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white'} font-bold text-xs rounded-lg transition text-center" ${isDone ? 'disabled' : ''}>
+            ${isDone ? 'Đã hoàn thành 🔒' : 'Vào Chơi ▶'}
+          </button>
+        `;
+        levelsContainer.appendChild(card);
+      });
+    }
+
+    /**
+     * Start a specific level
+     */
+    function startLevel(levelId) {
+      if (completedLevels.has(levelId)) {
+        showFeedback("Chủ đề này đã hoàn thành và không thể chơi lại!", "error");
+        return;
+      }
+
+      currentLevel = LEVELS.find(l => l.id === levelId);
+      if (!currentLevel) return;
+
+      // Reset state (Start with exactly 500 points)
+      score = 500;
+      timeLeft = 60;
+      openedTiles.clear();
+      isGameOver = false;
+      hint1Used = false;
+      hint2Used = false;
+
+      // Update Header/UI
+      levelTitleText.innerText = `Chủ đề ${currentLevel.id}`;
+      document.getElementById('hintStatusText').innerText = `Gợi ý: (Đang ẩn - Bấm nút bên phải để mở)`;
+      document.getElementById('hint1Btn').disabled = false;
+      document.getElementById('hint2Btn').disabled = false;
+      scoreText.innerText = score;
+      timerText.innerText = `${timeLeft}s`;
+      timerText.classList.remove('timer-critical');
+      answerInput.value = '';
+      hideFeedback();
+
+      // Render word underscore blanks in format: ___ ___ ___
+      updateWordBlanks();
+
+      // Set underlying image (full and intact)
+      bgPuzzleImage.src = currentLevel.image;
+
+      // Generate 12 tiles covering the image completely with 0 gaps and full dimensions
+      generateTiles();
+
+      // Switch screens
+      lobbyScreen.classList.add('hidden');
+      levelSelectScreen.classList.add('hidden');
+      gameplayScreen.classList.remove('hidden');
+      navRightControls.classList.remove('hidden');
+
+      // Start Countdown Timer & Time Deduction (-10 points every second)
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (isGameOver) return;
+        timeLeft--;
+        timerText.innerText = `${timeLeft}s`;
+
+        // Deduct 10 points every second
+        score = Math.max(0, score - 10);
+        scoreText.innerText = score;
+
+        if (timeLeft <= 10) {
+          timerText.classList.add('timer-critical');
+        }
+
+        if (timeLeft <= 0 || score <= 0) {
+          clearInterval(timerInterval);
+          triggerGameOver(false);
+        }
+      }, 1000);
+    }
+
+    /**
+     * Generate word underscore representation in format: ___ ___ ___
+     */
+    function updateWordBlanks() {
+      if (!currentLevel) return;
+      const primaryKeyword = currentLevel.title;
+      const words = primaryKeyword.split(' ');
+      let formattedWords = words.map(word => {
+        return word.split('').map(() => '_').join(' ');
+      });
+      document.getElementById('wordBlanksDisplay').innerHTML = formattedWords.join('&nbsp;&nbsp;&nbsp;');
+    }
+
+    /**
+     * Generate 12 covering tiles (3x4 grid) covering the image completely without gaps
+     */
+    function generateTiles() {
+      puzzleGrid.innerHTML = '';
+      // 3 rows x 4 columns = 12 tiles
+      for (let i = 0; i < 12; i++) {
+        const tileContainer = document.createElement('div');
+        tileContainer.className = "tile-container w-full h-full cursor-pointer relative overflow-hidden m-0 p-0 block";
+        tileContainer.dataset.index = i;
+
+        tileContainer.innerHTML = `
+          <div class="tile-card w-full h-full relative m-0 p-0">
+            <div class="tile-front absolute inset-0 w-full h-full bg-gradient-to-br from-indigo-700 via-blue-700 to-slate-900 flex items-center justify-center text-white font-heading font-black text-lg md:text-xl shadow-inner select-none m-0 p-0">
+              <span class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center text-sm">${i + 1}</span>
+            </div>
+            <div class="tile-back absolute inset-0 w-full h-full bg-transparent pointer-events-none m-0 p-0"></div>
+          </div>
+        `;
+
+        tileContainer.onclick = () => handleTileClick(i, tileContainer);
+        puzzleGrid.appendChild(tileContainer);
+      }
+    }
+
+    /**
+     * Handle clicking/tapping a tile to flip and reveal part of the image
+     */
+    function handleTileClick(index, tileEl) {
+      if (isGameOver || openedTiles.has(index)) return;
+      openedTiles.add(index);
+      tileEl.classList.add('opened');
+
+      // Small score deduction for manual flipping (-15 points)
+      score = Math.max(0, score - 15);
+      scoreText.innerText = score;
+    }
+
+    /**
+     * Reveal a random unopened tile (-50 points)
+     */
+    function revealRandomTile() {
+      if (isGameOver) return;
+      const unopenedIndices = [];
+      for (let i = 0; i < 12; i++) {
+        if (!openedTiles.has(i)) unopenedIndices.push(i);
+      }
+
+      if (unopenedIndices.length === 0) {
+        showFeedback("Tất cả các ô đã được mở!", "error");
+        return;
+      }
+
+      const randomIndex = unopenedIndices[Math.floor(Math.random() * unopenedIndices.length)];
+      const tileEl = puzzleGrid.children[randomIndex];
+      if (tileEl) {
+        openedTiles.add(randomIndex);
+        tileEl.classList.add('opened');
+        score = Math.max(0, score - 50);
+        scoreText.innerText = score;
+        showFeedback("Đã mở ngẫu nhiên 1 ô (-50đ)!", "info");
+      }
+    }
+
+    /**
+     * Use Hint 1 or Hint 2 (-80 points each)
+     */
+    function useHint(hintNumber) {
+      if (isGameOver || !currentLevel) return;
+
+      if (hintNumber === 1) {
+        if (hint1Used) {
+          showFeedback("Gợi ý 1 đã được sử dụng!", "info");
+          return;
+        }
+        hint1Used = true;
+        document.getElementById('hint1Btn').disabled = true;
+        document.getElementById('hint1Btn').classList.add('opacity-50', 'cursor-not-allowed');
+      } else if (hintNumber === 2) {
+        if (hint2Used) {
+          showFeedback("Gợi ý 2 đã được sử dụng!", "info");
+          return;
+        }
+        hint2Used = true;
+        document.getElementById('hint2Btn').disabled = true;
+        document.getElementById('hint2Btn').classList.add('opacity-50', 'cursor-not-allowed');
+      }
+
+      score = Math.max(0, score - 80);
+      scoreText.innerText = score;
+
+      const hintText = hintNumber === 1 ? currentLevel.hint1 : currentLevel.hint2;
+      document.getElementById('hintStatusText').innerHTML = `💡 Gợi ý ${hintNumber}: <span class="text-amber-800 font-bold">${hintText}</span>`;
+      showFeedback(`Đã dùng Gợi ý ${hintNumber} (-80đ)`, "info");
+    }
+
+    /**
+     * Handle submit guess answer
+     */
+    function handleGuessSubmit(event) {
+      event.preventDefault();
+      if (isGameOver || !currentLevel) return;
+
+      const userGuess = answerInput.value.trim().toLowerCase();
+      if (!userGuess) {
+        showFeedback("Vui lòng nhập từ khóa dự đoán!", "error");
+        return;
+      }
+
+      // Check keywords match
+      const isCorrect = currentLevel.keywords.some(kw => userGuess.includes(kw) || kw.includes(userGuess));
+
+      if (isCorrect) {
+        clearInterval(timerInterval);
+        triggerGameOver(true);
+      } else {
+        score = Math.max(0, score - 30);
+        scoreText.innerText = score;
+        showFeedback("Sai rồi! Trừ 30 điểm. Hãy thử lại!", "error");
+        answerInput.value = '';
+        answerInput.focus();
+      }
+    }
+
+    /**
+     * Trigger Victory / Game Over popup
+     */
+    function triggerGameOver(isWin) {
+      isGameOver = true;
+      clearInterval(timerInterval);
+
+      // Open all remaining tiles on win
+      if (isWin) {
+        for (let i = 0; i < 12; i++) {
+          const tileEl = puzzleGrid.children[i];
+          if (tileEl) tileEl.classList.add('opened');
+        }
+
+        // Mark level as completed and save to localStorage
+        completedLevels.add(currentLevel.id);
+        localStorage.setItem('ai_puzzle_completed_levels_v9', JSON.stringify(Array.from(completedLevels)));
+      }
+
+      // Populate Modal
+      modalIcon.innerText = isWin ? "🏆" : "⏰";
+      modalIcon.className = isWin 
+        ? "w-20 h-20 rounded-full mx-auto flex items-center justify-center text-4xl shadow-lg bg-amber-100 text-amber-600"
+        : "w-20 h-20 rounded-full mx-auto flex items-center justify-center text-4xl shadow-lg bg-rose-100 text-rose-600";
+      
+      modalTitle.innerText = isWin ? "Chính Xác Xuất Sắc!" : "Hết Thời Gian!";
+      modalDescription.innerText = isWin ? `Bạn đã đoán đúng thuật ngữ: "${currentLevel.title}"` : `Rất tiếc, thời gian đã hết hoặc điểm đã cạn!`;
+      
+      modalPreviewImage.src = currentLevel.image;
+      modalAnswerText.innerText = currentLevel.title;
+      modalFinalScore.innerText = `${score}đ`;
+      modalTimeLeft.innerText = `${timeLeft}s`;
+
+      gameModal.classList.remove('hidden');
+    }
+
+    /**
+     * Show feedback notification toast
+     */
+    function showFeedback(msg, type) {
+      feedbackMessage.innerText = msg;
+      feedbackMessage.classList.remove('hidden');
+      if (type === 'error') {
+        feedbackMessage.className = "p-3 rounded-xl text-sm font-bold text-center bg-rose-100 text-rose-700 border border-rose-200 animate-bounce";
+      } else {
+        feedbackMessage.className = "p-3 rounded-xl text-sm font-bold text-center bg-blue-100 text-blue-700 border border-blue-200";
+      }
+    }
+
+    function hideFeedback() {
+      feedbackMessage.classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
